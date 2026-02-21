@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Grammar Quiz 💡</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f0f4f7;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        color: #333;
+    }
+    h1 {
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+    #quiz-container {
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 600px;
+    }
+    #question-number {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    #question-text {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+    .option-btn {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 8px;
+        background: #3498db;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .option-btn:hover {
+        background: #2980b9;
+    }
+    #score {
+        font-size: 1.1rem;
+        margin-top: 20px;
+        font-weight: bold;
+    }
+    #next-btn {
+        display: none;
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 1rem;
+        cursor: pointer;
+        border: none;
+        border-radius: 8px;
+        background: #2ecc71;
+        color: white;
+        transition: background 0.3s;
+    }
+    #next-btn:hover {
+        background: #27ae60;
+    }
+</style>
+</head>
+<body>
+
+<h1>English Grammar Quiz 💡</h1>
+<div id="quiz-container">
+    <div id="question-number"></div>
+    <div id="question-text"></div>
+    <button class="option-btn" id="option1"></button>
+    <button class="option-btn" id="option2"></button>
+    <button class="option-btn" id="option3"></button>
+    <button id="next-btn">Next Question</button>
+    <div id="score"></div>
+</div>
+
+<audio id="correct-sound">
+    <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg">
+</audio>
+<audio id="wrong-sound">
+    <source src="https://www.soundjay.com/buttons/sounds/beep-07.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// JSON of 100 English grammar questions (example format)
+const questions = [
+    { text: "She ..... to school every day.", op1: "goes", op2: "gone", op3: "went", correct: 1 },
+    { text: "He ..... his homework yesterday.", op1: "did", op2: "do", op3: "does", correct: 1 },
+    { text: "They ..... playing football now.", op1: "is", op2: "are", op3: "am", correct: 2 },
+    { text: "I have ..... apple.", op1: "an", op2: "a", op3: "the", correct: 1 },
+    { text: "We ..... to the park last Sunday.", op1: "go", op2: "went", op3: "gone", correct: 2 },
+    { text: "He usually ..... up at 7 am.", op1: "wake", op2: "wakes", op3: "waked", correct: 2 },
+    { text: "I ..... seen that movie.", op1: "have", op2: "has", op3: "had", correct: 1 },
+    { text: "She is taller ..... her brother.", op1: "than", op2: "then", op3: "that", correct: 1 },
+    { text: "Can you lend me ..... pen?", op1: "an", op2: "a", op3: "the", correct: 2 },
+    { text: "He is the ..... student in the class.", op1: "smart", op2: "smarter", op3: "smartest", correct: 3 },
+    // ... continue to 100 questions
+];
+
+// Random shuffle function
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+let score = 0;
+let currentIndex = 0;
+let selectedQuestions = [];
+
+function startQuiz(numQuestions) {
+    score = 0;
+    currentIndex = 0;
+    selectedQuestions = [...questions];
+    shuffle(selectedQuestions);
+    if(numQuestions < selectedQuestions.length) {
+        selectedQuestions = selectedQuestions.slice(0, numQuestions);
+    }
+    showQuestion();
+}
+
+function showQuestion() {
+    const q = selectedQuestions[currentIndex];
+    document.getElementById('question-number').innerText = `Question [${currentIndex + 1}]`;
+    document.getElementById('question-text').innerText = q.text;
+    document.getElementById('option1').innerText = q.op1;
+    document.getElementById('option2').innerText = q.op2;
+    document.getElementById('option3').innerText = q.op3;
+
+    document.getElementById('next-btn').style.display = 'none';
+
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach((btn, index) => {
+        btn.disabled = false;
+        btn.style.background = "#3498db";
+        btn.onclick = () => checkAnswer(index + 1, q.correct, btn);
+    });
+}
+
+function checkAnswer(selected, correct, btn) {
+    const correctSound = document.getElementById('correct-sound');
+    const wrongSound = document.getElementById('wrong-sound');
+
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+
+    if(selected === correct) {
+        btn.style.background = "#2ecc71";
+        correctSound.play();
+        score++;
+    } else {
+        btn.style.background = "#e74c3c";
+        wrongSound.play();
+    }
+
+    document.getElementById('score').innerText = `Score: ${score} / ${selectedQuestions.length}`;
+    document.getElementById('next-btn').style.display = 'inline-block';
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+    currentIndex++;
+    if(currentIndex < selectedQuestions.length) {
+        showQuestion();
+    } else {
+        alert(`Quiz finished! Final Score: ${score} / ${selectedQuestions.length}`);
+        startQuiz(selectedQuestions.length);
+    }
+});
+
+// Start quiz with 10 questions initially
+startQuiz(10);
+</script>
+
+</body>
+</html>

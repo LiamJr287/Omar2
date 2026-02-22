@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Grammar Quiz</title>
+<style>
+  body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+  }
+
+  .container {
+      max-width: 600px;
+      margin: 60px auto;
+      background: rgba(0,0,0,0.4);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+
+  h1 {
+      margin-bottom: 20px;
+  }
+
+  button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      background: #00c6ff;
+      color: white;
+      transition: 0.3s;
+  }
+
+  button:hover {
+      background: #0072ff;
+  }
+
+  #questionText {
+      margin: 20px 0;
+      font-size: 18px;
+  }
+
+  .option {
+      display: block;
+      width: 80%;
+      margin: 8px auto;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+  }
+
+  .option:hover {
+      background: rgba(255,255,255,0.3);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>English Grammar Quiz 💡</h1>
+
+  <div id="startScreen">
+      <p>Enter your name:</p>
+      <input type="text" id="userNameInput" placeholder="Your Name">
+      <br><br>
+      <p>Number of questions:</p>
+      <input type="number" id="numQuestions" min="1">
+      <br><br>
+      <button onclick="startQuiz()">Start Quiz</button>
+  </div>
+
+  <div id="quizScreen" style="display:none;">
+      <h2 id="questionText"></h2>
+      <div id="options"></div>
+  </div>
+
+  <div id="resultScreen" style="display:none;">
+      <h2 id="finalScore"></h2>
+      <button onclick="restartQuiz()">Play Again</button>
+  </div>
+</div>
+
+<script>
+let questions = [];
+const correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+const wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/beep-07.mp3");
+
+// Load questions from JSON
+fetch("questions.json")
+  .then(response => response.json())
+  .then(data => {
+    questions = data;
+    console.log("Loaded questions:", questions);
+  })
+  .catch(error => console.error("Error loading JSON:", error));
+
+let userName = "";
+let selectedQuestions = [];
+let score = 0;
+let currentIndex = 0;
+
+function startQuiz() {
+    // Get user input
+    userName = document.getElementById("userNameInput").value.trim();
+    if(!userName) {
+        alert("Please enter your name!");
+        return;
+    }
+
+    let num = parseInt(document.getElementById("numQuestions").value);
+    if(isNaN(num) || num <= 0) {
+        alert("Invalid number of questions!");
+        return;
+    }
+
+    // Prepare questions
+    selectedQuestions = shuffleArray([...questions]).slice(0, num);
+    score = 0;
+    currentIndex = 0;
+
+    // Show quiz screen
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("quizScreen").style.display = "block";
+    loadQuestion();
+}
+
+function loadQuestion() {
+    if(currentIndex >= selectedQuestions.length) {
+        showResults();
+        return;
+    }
+
+    const q = selectedQuestions[currentIndex];
+    document.getElementById("questionText").innerText = `Question ${currentIndex+1}: ${q.text}`;
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    [q.op1, q.op2, q.op3].forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(i+1);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(choice) {
+    const correctAnswer = selectedQuestions[currentIndex].correct;
+    if(choice === correctAnswer) {
+        correctSound.play();
+        alert("Correct 🔔 💯");
+        score++;
+    } else {
+        wrongSound.play();
+        alert("Incorrect 🔊");
+    }
+    currentIndex++;
+    loadQuestion();
+}
+
+function showResults() {
+    document.getElementById("quizScreen").style.display = "none";
+    document.getElementById("resultScreen").style.display = "block";
+    document.getElementById("finalScore").innerText = `Quiz Finished! ${userName}, your score: ${score} / ${selectedQuestions.length}`;
+}
+
+function restartQuiz() {
+    document.getElementById("resultScreen").style.display = "none";
+    document.getElementById("startScreen").style.display = "block";
+}
+
+function shuffleArray(array) {
+    return array.sort(() => Math.random() - 0.5);
+}
+</script>
+
+</body>
+</html>
